@@ -1,10 +1,10 @@
-#Excersise 3, week 1.
+ #Excersise 3, week 1.
 
 __author__ = 'rafael'
 
 from snmp_helper import snmp_get_oid, snmp_extract
 
-community_string = 'galileo'
+community_string = '******'
 oids = {'RunningLastChanged': '1.3.6.1.4.1.9.9.43.1.1.1.0',
         'StartupLastChanged': '1.3.6.1.4.1.9.9.43.1.1.3.0'}
 port = '7961'
