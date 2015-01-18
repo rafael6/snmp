@@ -7,8 +7,8 @@ from snmp_helper import snmp_get_oid, snmp_extract
 community_string = '******'
 oids = {'RunningLastChanged': '1.3.6.1.4.1.9.9.43.1.1.1.0',
         'StartupLastChanged': '1.3.6.1.4.1.9.9.43.1.1.3.0'}
-port = '7961'
-ip_addr = '50.242.94.227'
+port = '*****'
+ip_addr = '******'
 
 
 def extract_data(node, oid):
