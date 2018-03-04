@@ -1,0 +1,87 @@
+__author__ = 'rafael'
+
+import pygal
+import sched
+from time import sleep, time
+from datetime import datetime
+from snmp_helper import snmp_extract, snmp_get_oid_v3
+
+# Variable declaration
+IP = '50.242.94.227'
+a_user = 'pysnmp'
+auth_key = 'galileo1'
+encrypt_key = 'galileo1'
+
+oids = {'ifDescr_fa4': '1.3.6.1.2.1.2.2.1.2.5',
+        'ifInOctets_fa4': '1.3.6.1.2.1.2.2.1.10.5',
+        'ifInUcastPkts_fa4': '1.3.6.1.2.1.2.2.1.11.5',
+        'ifOutOctets_fa4': '1.3.6.1.2.1.2.2.1.16.5',
+        'ifOutUcastPkts_fa4': '1.3.6.1.2.1.2.2.1.17.5'}
+pynet_rtr1 = (IP, 7961)
+in_octects_fa4 = []
+out_octects_fa4 = []
+in_packets_fa4 = []
+out_packets_fa4 = []
+x_labels = ['0', '5', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60']
+
+
+def create_chart(title, label1, label2, lst1, lst2):
+    line_chart = pygal.Line()
+    line_chart.x_labels = x_labels
+    line_chart.title = title
+    line_chart.add(label1, lst1)
+    line_chart.add(label2, lst2)
+    line_chart.render_to_file(title)
+
+
+def get_oid_val(oid, rtr=pynet_rtr1):
+    """Takes a router and an OID object and returns its associated OID value"""
+    snmp_user = (a_user, auth_key, encrypt_key)
+    if oid == '1.3.6.1.2.1.2.2.1.2.5':
+        value = snmp_extract(snmp_get_oid_v3(rtr, snmp_user, oid=oid))
+    else:
+        value = int(snmp_extract(snmp_get_oid_v3(rtr, snmp_user, oid=oid)))
+    return value
+
+flag = 1
+def switch():
+    global flag
+    flag = 0
+
+def get_counters():
+    global flag
+    in_octects_fa4.append(get_oid_val(oids['ifInOctets_fa4']))
+    out_octects_fa4.append(get_oid_val(oids['ifOutOctets_fa4']))
+    in_packets_fa4.append(get_oid_val(oids['ifInUcastPkts_fa4']))
+    out_packets_fa4.append(get_oid_val(oids['ifOutUcastPkts_fa4']))
+    print flag
+    print 'Last SNMP query for %s on %s was on %s.' %\
+          (get_oid_val(oids['ifDescr_fa4']), pynet_rtr1, datetime.now())
+    sleep(5)
+    return flag
+
+def start_time():
+    s = sched.scheduler(time, sleep)
+    s.enter(2, 1, switch(), (s,))
+    s.run
+
+def main():
+    start_time()
+
+    for i in iter(get_counters, 0):
+        pass
+
+
+    create_chart('IN_OUT_BYTES_RTR-1_INT-F4', 'InBytes', 'OutBytes',
+                 in_octects_fa4, out_octects_fa4)
+
+    create_chart('IN_OUT_UNICAST_RTR-1_INT-F4', 'InPackets', 'OutPackets',
+                 in_packets_fa4, out_packets_fa4)
+
+
+
+
+if __name__ == "__main__":
+    main()
+
+
